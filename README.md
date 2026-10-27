@@ -82,12 +82,18 @@ Shu sahifa havolasini xodimlarga yuboring — telefonda ochib, yuklab, o'rnatadi
 ## iPhone
 
 ### Bepul test (Expo Go)
-Apple pulli hisobsiz iPhone'ga o'z ilovani o'rnatishga ruxsat bermaydi, shuning uchun test **Expo Go** orqali qilinadi:
+Apple pulli hisobsiz iPhone'ga o'z ilovani o'rnatishga ruxsat bermaydi, shuning uchun test **Expo Go** orqali, noutbuk yordamida qilinadi:
 1. iPhone'ga App Store'dan **Expo Go** ni o'rnating.
-2. Kompyuterda (Windows/Mac): [Node.js](https://nodejs.org) o'rnating, repo'ni yuklab oling, `.env.example` dan nusxa olib `.env` yarating va Firebase qiymatlarini yozing.
-3. `npm install` va `npx expo start --tunnel` → chiqqan QR kodni iPhone kamerasi bilan skanerlang.
+2. Noutbukka [Node.js](https://nodejs.org) ning **LTS** versiyasini o'rnating.
+3. GitHub'da repo sahifasi → yashil **Code** → **Download ZIP** → ZIP ni oching (Extract).
+4. Windows: papkadagi **`start-iphone.bat`** ni ikki marta bosing. Mac: **`start-iphone.command`**.
+   Birinchi marta paketlar 2–5 daqiqa o'rnatiladi.
+5. Oynada QR kod chiqadi → iPhone **kamerasi** bilan skanerlang → Expo Go'da ochiladi.
+   Ulanmasa (boshqa Wi-Fi yoki mobil internet) → **`start-iphone-tunnel.bat`** ni ishlating.
 
-⚠ Expo Go'da iPhone **fonda kuzatmaydi** — faqat ilova ochiq turganda. Kirish/chiqish, kechikish, topshiriqlar ishlaydi; lekin ilova yopilgan vaqt "Signal yo'q" bo'lib qoladi. Bu faqat test uchun.
+Noutbuk oynasi ochiq turgan paytda ilova ishlaydi. Firebase kalitlari kod ichida — `.env` shart emas.
+
+⚠ Expo Go'da iPhone **fonda kuzatmaydi** — faqat ilova ochiq turganda. Kirish/chiqish, kechikish, topshiriqlar, rahbar paneli ishlaydi; lekin ilova yopilgan vaqt "Signal yo'q" bo'lib qoladi. Bu faqat test uchun.
 
 ### Doimiy ishlatish (fonda kuzatuv bilan)
 - [Apple Developer Program](https://developer.apple.com/programs/) — yiliga $99.
