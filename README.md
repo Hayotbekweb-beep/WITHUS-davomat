@@ -2,6 +2,8 @@
 
 WITHUS TRIP aviakassasi xodimlari uchun davomat, geolokatsiya, KPI va oylik maosh ilovasi (Android + iPhone).
 
+🌐 Tillar: **o'zbek, rus, ingliz** — birinchi ochilganda telefon tiliga qarab tanlanadi, kirish ekrani va ⚙️ Sozlamalarda almashtiriladi. Har bir foydalanuvchi o'z tilini tanlaydi.
+
 ## Imkoniyatlar
 
 **Xodim ilovasi**

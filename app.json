@@ -10,7 +10,11 @@
       "supportsTablet": false,
       "bundleIdentifier": "uz.withustrip.davomat",
       "infoPlist": {
-        "UIBackgroundModes": ["location", "fetch"]
+        "UIBackgroundModes": [
+          "location",
+          "fetch"
+        ],
+        "CFBundleAllowMixedLocalizations": true
       }
     },
     "android": {
@@ -41,6 +45,11 @@
           "isAndroidForegroundServiceEnabled": true
         }
       ]
-    ]
+    ],
+    "locales": {
+      "uz": "./locales/uz.json",
+      "ru": "./locales/ru.json",
+      "en": "./locales/en.json"
+    }
   }
 }

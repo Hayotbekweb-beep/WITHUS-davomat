@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { t as tr } from '../../lib/i18n';
 import { Pressable, Text, View } from 'react-native';
 import { colors } from '../../components/ui';
 import { useSettings } from '../../lib/data';
@@ -9,16 +10,23 @@ import StaffTab from './StaffTab';
 import TasksTab from './TasksTab';
 
 const TABS = [
-  { id: 'map', label: 'Xarita', icon: '🗺' },
-  { id: 'tasks', label: 'Topshiriq', icon: '📍' },
-  { id: 'report', label: 'KPI/Maosh', icon: '📊' },
-  { id: 'staff', label: 'Xodimlar', icon: '👥' },
-  { id: 'settings', label: 'Sozlama', icon: '⚙️' },
+  { id: 'map', label: 'tabMap', icon: '🗺' },
+  { id: 'tasks', label: 'tabTasks', icon: '📍' },
+  { id: 'report', label: 'tabReport', icon: '📊' },
+  { id: 'staff', label: 'tabStaff', icon: '👥' },
+  { id: 'settings', label: 'tabSettings', icon: '⚙️' },
 ] as const;
+
+// Til almashganda ekran qayta yaratiladi — tanlangan bo'lim saqlanib qoladi
+let lastTab: (typeof TABS)[number]['id'] = 'map';
 
 export default function AdminHome() {
   const settings = useSettings();
-  const [tab, setTab] = useState<(typeof TABS)[number]['id']>('map');
+  const [tab, setTabState] = useState(lastTab);
+  const setTab = (id: typeof tab) => {
+    lastTab = id;
+    setTabState(id);
+  };
 
   return (
     <View style={{ flex: 1, paddingTop: 44 }}>
@@ -42,7 +50,7 @@ export default function AdminHome() {
           <Pressable key={t.id} onPress={() => setTab(t.id)} style={{ flex: 1, alignItems: 'center', paddingVertical: 8 }}>
             <Text style={{ fontSize: 20 }}>{t.icon}</Text>
             <Text style={{ fontSize: 11, color: tab === t.id ? colors.primary : colors.muted, fontWeight: tab === t.id ? '700' : '400' }}>
-              {t.label}
+              {tr(t.label)}
             </Text>
           </Pressable>
         ))}

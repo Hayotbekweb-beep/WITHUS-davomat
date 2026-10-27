@@ -1,4 +1,5 @@
 import { Settings, Shift, ShiftId } from './types';
+import { t } from './i18n';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
@@ -17,10 +18,10 @@ export const fmtDateTime = (ms: number) => {
 };
 export const fmtHours = (ms: number) => {
   const m = Math.round(ms / 60000);
-  return `${Math.floor(m / 60)} soat ${m % 60} daq`;
+  return t('hours', { h: Math.floor(m / 60), m: m % 60 });
 };
 export const fmtMoney = (n: number) =>
-  `${Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm`;
+  `${Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} ${t('currency')}`;
 
 const parseHM = (hm: string) => {
   const [h, m] = hm.split(':').map(Number);
@@ -61,3 +62,5 @@ export function isShiftNow(shift: Shift, now: number): boolean {
   const prev = start - 24 * 3600000;
   return now >= prev && now <= prev + shiftDurationMs(shift);
 }
+
+export const shiftName = (shift: Shift) => t(shift.id === 'night' ? 'shift_night' : 'shift_day');

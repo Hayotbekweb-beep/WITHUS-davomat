@@ -1,4 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
+import { LangProvider, t, useI18n } from './src/lib/i18n';
 import { onAuthStateChanged, signOut, User } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
@@ -11,6 +12,15 @@ import EmployeeHome from './src/screens/EmployeeHome';
 import LoginScreen from './src/screens/LoginScreen';
 
 export default function App() {
+  return (
+    <LangProvider>
+      <Root />
+    </LangProvider>
+  );
+}
+
+function Root() {
+  const { lang } = useI18n();
   const [user, setUser] = useState<User | null | undefined>(undefined);
   const [profile, setProfile] = useState<UserProfile | null | undefined>(undefined);
 
@@ -30,9 +40,7 @@ export default function App() {
   if (!isConfigured) {
     content = (
       <Center>
-        <Text style={{ textAlign: 'center' }}>
-          Firebase sozlanmagan. README dagi ko'rsatma bo'yicha EXPO_PUBLIC_FIREBASE_* qiymatlarini kiriting.
-        </Text>
+        <Text style={{ textAlign: 'center' }}>{t('notConfigured')}</Text>
       </Center>
     );
   } else if (user === undefined || (user && profile === undefined)) {
@@ -46,10 +54,8 @@ export default function App() {
   } else if (!profile || profile.active === false) {
     content = (
       <Center>
-        <Text style={{ textAlign: 'center', marginBottom: 12 }}>
-          Hisobingiz faol emas yoki topilmadi. Rahbarga murojaat qiling.
-        </Text>
-        <Button title="Chiqish" onPress={() => signOut(auth)} />
+        <Text style={{ textAlign: 'center', marginBottom: 12 }}>{t('inactiveAccount')}</Text>
+        <Button title={t('logout')} onPress={() => signOut(auth)} />
       </Center>
     );
   } else if (profile.role === 'admin') {
@@ -61,7 +67,9 @@ export default function App() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <StatusBar style="dark" />
-      {content}
+      <View key={lang} style={{ flex: 1 }}>
+        {content}
+      </View>
     </View>
   );
 }

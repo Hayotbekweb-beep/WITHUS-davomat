@@ -1,4 +1,5 @@
 import { File, Paths } from 'expo-file-system';
+import { t, tPosition } from '../../lib/i18n';
 import * as Sharing from 'expo-sharing';
 import React, { useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
@@ -35,9 +36,9 @@ export default function ReportTab({ settings }: { settings: Settings }) {
       if (file.exists) file.delete();
       file.create();
       file.write(reportsToCsv(month, reports));
-      await Sharing.shareAsync(file.uri, { mimeType: 'text/csv', dialogTitle: 'Hisobot' });
+      await Sharing.shareAsync(file.uri, { mimeType: 'text/csv', dialogTitle: t('report') });
     } catch (e: any) {
-      Alert.alert('Xato', e?.message ?? String(e));
+      Alert.alert(t('error'), e?.message ?? String(e));
     }
   };
 
@@ -52,8 +53,8 @@ export default function ReportTab({ settings }: { settings: Settings }) {
       </View>
 
       <Card>
-        <Row label="Jami maosh fondi" value={fmtMoney(total)} color={colors.primary} />
-        <Button title="Excel (CSV) yuklab olish" outline onPress={exportCsv} />
+        <Row label={t('payrollTotal')} value={fmtMoney(total)} color={colors.primary} />
+        <Button title={t('exportCsv')} outline onPress={exportCsv} />
       </Card>
 
       {reports.map((r) => (
@@ -62,7 +63,7 @@ export default function ReportTab({ settings }: { settings: Settings }) {
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <View style={{ flex: 1 }}>
                 <Text style={{ fontSize: 16, fontWeight: '700' }}>{r.user.name}</Text>
-                <Muted>{r.user.position}</Muted>
+                <Muted>{tPosition(r.user.position)}</Muted>
               </View>
               <View style={{ alignItems: 'flex-end' }}>
                 <Text style={{ fontSize: 16, fontWeight: '800', color: kpiColor(r.kpi.total) }}>
@@ -73,32 +74,30 @@ export default function ReportTab({ settings }: { settings: Settings }) {
             </View>
           </Pressable>
           {r.mockDetected && (
-            <Text style={{ color: colors.red, fontWeight: '700', marginTop: 6 }}>
-              ⚠ Soxta joylashuv (Fake GPS) ishlatilgan!
-            </Text>
+            <Text style={{ color: colors.red, fontWeight: '700', marginTop: 6 }}>{t('fakeGpsUsed')}</Text>
           )}
           {open === r.user.uid && (
             <View style={{ marginTop: 8 }}>
-              <H>Davomat</H>
-              <Row label="Smenalar" value={`${r.shifts} / ${r.user.plannedShifts}`} />
-              <Row label="Kechikishlar" value={`${r.lateCount} marta, ${r.lateMinutes} daq`} color={r.lateCount ? colors.red : undefined} />
-              <Row label="Ofisda" value={fmtHours(r.insideMs)} />
-              <Row label="Topshiriqda" value={fmtHours(r.taskMs)} />
-              <Row label="Sababsiz tashqarida" value={fmtHours(r.outsideMs)} color={r.outsideMs ? colors.orange : undefined} />
-              <Row label="Signal yo'q" value={fmtHours(r.unknownMs)} />
-              <Row label="Hisoblangan / reja" value={`${fmtHours(r.paidMs)} / ${fmtHours(r.plannedMs)}`} />
-              <Row label="Topshiriqlar (o'z vaqtida)" value={`${r.tasksOnTime} / ${r.tasksTotal}`} />
+              <H>{t('attendance')}</H>
+              <Row label={t('shifts')} value={`${r.shifts} / ${r.user.plannedShifts}`} />
+              <Row label={t('lateness')} value={t('lateSummary', { n: r.lateCount, m: r.lateMinutes })} color={r.lateCount ? colors.red : undefined} />
+              <Row label={t('inOffice')} value={fmtHours(r.insideMs)} />
+              <Row label={t('onTask')} value={fmtHours(r.taskMs)} />
+              <Row label={t('unexcusedOutside')} value={fmtHours(r.outsideMs)} color={r.outsideMs ? colors.orange : undefined} />
+              <Row label={t('noSignal')} value={fmtHours(r.unknownMs)} />
+              <Row label={t('countedVsPlan')} value={`${fmtHours(r.paidMs)} / ${fmtHours(r.plannedMs)}`} />
+              <Row label={t('tasksOnTime')} value={`${r.tasksOnTime} / ${r.tasksTotal}`} />
               <H>KPI</H>
-              <Row label={`O'z vaqtida kelish (${settings.kpiWeights.punctuality}%)`} value={`${r.kpi.punctuality.toFixed(0)}%`} />
-              <Row label={`Davomat (${settings.kpiWeights.attendance}%)`} value={`${r.kpi.attendance.toFixed(0)}%`} />
-              <Row label={`Ish joyida bo'lish (${settings.kpiWeights.presence}%)`} value={`${r.kpi.presence.toFixed(0)}%`} />
-              <Row label={`Topshiriqlar (${settings.kpiWeights.tasks}%)`} value={`${r.kpi.tasks.toFixed(0)}%`} />
-              <H>Maosh</H>
-              <Row label="Asosiy (ishlangan soat bo'yicha)" value={fmtMoney(r.salary.base)} />
-              <Row label="KPI bonus" value={`+ ${fmtMoney(r.salary.bonus)}`} color={colors.green} />
-              <Row label="Kechikish jarimasi" value={`− ${fmtMoney(r.salary.penalty)}`} color={colors.red} />
-              <Row label="Jami" value={fmtMoney(r.salary.total)} color={colors.primary} />
-              <H>Kunlar</H>
+              <Row label={`${t('kpiPunctuality')} (${settings.kpiWeights.punctuality}%)`} value={`${r.kpi.punctuality.toFixed(0)}%`} />
+              <Row label={`${t('kpiAttendance')} (${settings.kpiWeights.attendance}%)`} value={`${r.kpi.attendance.toFixed(0)}%`} />
+              <Row label={`${t('kpiPresence')} (${settings.kpiWeights.presence}%)`} value={`${r.kpi.presence.toFixed(0)}%`} />
+              <Row label={`${t('kpiTasks')} (${settings.kpiWeights.tasks}%)`} value={`${r.kpi.tasks.toFixed(0)}%`} />
+              <H>{t('salary')}</H>
+              <Row label={t('salaryBase')} value={fmtMoney(r.salary.base)} />
+              <Row label={t('kpiBonus')} value={`+ ${fmtMoney(r.salary.bonus)}`} color={colors.green} />
+              <Row label={t('latePenalty')} value={`− ${fmtMoney(r.salary.penalty)}`} color={colors.red} />
+              <Row label={t('total')} value={fmtMoney(r.salary.total)} color={colors.primary} />
+              <H>{t('days')}</H>
               {sessions
                 .filter((s) => s.uid === r.user.uid)
                 .sort((a, b) => a.start - b.start)
@@ -106,7 +105,7 @@ export default function ReportTab({ settings }: { settings: Settings }) {
                   <Row
                     key={s.id}
                     label={`${dayKey(s.start).slice(5)}  ${fmtTime(s.start)}–${s.end ? fmtTime(s.end) : '...'}`}
-                    value={s.lateMinutes > settings.graceMinutes ? `kech ${s.lateMinutes} daq` : 'vaqtida'}
+                    value={s.lateMinutes > settings.graceMinutes ? t('late', { n: s.lateMinutes }) : t('onTime')}
                     color={s.lateMinutes > settings.graceMinutes ? colors.red : colors.green}
                   />
                 ))}

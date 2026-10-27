@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { t } from './i18n';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
@@ -169,8 +170,8 @@ async function startBackgroundUpdates() {
     pausesUpdatesAutomatically: false,
     activityType: Location.ActivityType.Other,
     foregroundService: {
-      notificationTitle: 'WITHUS davomat',
-      notificationBody: 'Ish vaqti kuzatilmoqda. Ishni tugatganda "Tugatish" ni bosing.',
+      notificationTitle: t('notifTitle'),
+      notificationBody: t('notifBody'),
       notificationColor: '#0B5FFF',
       killServiceOnDestroy: false,
     },
@@ -180,7 +181,7 @@ async function startBackgroundUpdates() {
 export async function ensurePermissions(): Promise<{ background: boolean }> {
   const fg = await Location.requestForegroundPermissionsAsync();
   if (fg.status !== 'granted') {
-    throw new Error("Geolokatsiyaga ruxsat berilmadi. Telefon sozlamalaridan ruxsat bering.");
+    throw new Error(t('permDenied'));
   }
   if (!backgroundSupported) return { background: false };
   const bg = await Location.requestBackgroundPermissionsAsync();
@@ -191,10 +192,10 @@ export async function checkIn(profile: UserProfile, settings: Settings) {
   const { background } = await ensurePermissions();
   const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Highest });
   const { latitude: lat, longitude: lng, accuracy } = loc.coords;
-  if (loc.mocked) throw new Error("Soxta joylashuv (Fake GPS) aniqlandi. Uni o'chiring.");
+  if (loc.mocked) throw new Error(t('fakeGps'));
   if (!isInside(lat, lng, accuracy, settings.office)) {
     const d = Math.round(distanceM(lat, lng, settings.office.lat, settings.office.lng));
-    throw new Error(`Siz ofis hududida emassiz (ofisdan ${d} m uzoqdasiz). Ishni ofisda boshlang.`);
+    throw new Error(t('notInOffice', { d }));
   }
 
   const now = Date.now();

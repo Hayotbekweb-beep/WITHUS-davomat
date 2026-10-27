@@ -1,4 +1,5 @@
 import * as Location from 'expo-location';
+import { t, t as tr, tPosition } from '../lib/i18n';
 import { signOut } from 'firebase/auth';
 import { collection, doc, onSnapshot, query, updateDoc, where } from 'firebase/firestore';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -7,7 +8,7 @@ import { Button, Card, colors, H, Muted, Row } from '../components/ui';
 import { useSettings } from '../lib/data';
 import { auth, db } from '../lib/firebase';
 import { buildReport } from '../lib/payroll';
-import { fmtDateTime, fmtHours, fmtMoney, fmtTime, getShift, monthKey } from '../lib/time';
+import { fmtDateTime, fmtHours, fmtMoney, fmtTime, getShift, monthKey, shiftName } from '../lib/time';
 import {
   backgroundSupported,
   checkIn,
@@ -88,24 +89,21 @@ export default function EmployeeHome({ profile }: { profile: UserProfile }) {
     try {
       const r = await checkIn(profile, settings);
       await refreshState();
-      const late =
-        r.lateMinutes > settings.graceMinutes ? `\nKechikish: ${r.lateMinutes} daqiqa.` : '';
-      const bg = r.background
-        ? ''
-        : "\n\nDiqqat: fon rejimida kuzatuvga ruxsat yo'q. Ish vaqtida ilovani yopmang yoki sozlamalardan 'Har doim' ruxsatini bering.";
-      Alert.alert('Ish boshlandi', `Vaqt: ${fmtTime(Date.now())}${late}${bg}`);
+      const late = r.lateMinutes > settings.graceMinutes ? `\n${t('lateBy', { n: r.lateMinutes })}` : '';
+      const bg = r.background ? '' : `\n\n${t('noBgWarning')}`;
+      Alert.alert(t('workStarted'), `${t('timeIs', { t: fmtTime(Date.now()) })}${late}${bg}`);
     } catch (e: any) {
-      Alert.alert('Ishni boshlab bo\'lmadi', e?.message ?? String(e));
+      Alert.alert(t('cannotStart'), e?.message ?? String(e));
     } finally {
       setBusy(false);
     }
   };
 
   const onCheckOut = () =>
-    Alert.alert('Ishni tugatish', 'Ish kunini yakunlaysizmi?', [
-      { text: "Yo'q" },
+    Alert.alert(t('finishWork'), t('finishConfirm'), [
+      { text: t('no') },
       {
-        text: 'Ha, tugatish',
+        text: t('finishYes'),
         style: 'destructive',
         onPress: async () => {
           setBusy(true);
@@ -113,7 +111,7 @@ export default function EmployeeHome({ profile }: { profile: UserProfile }) {
             await checkOut();
             await refreshState();
           } catch (e: any) {
-            Alert.alert('Xato', e?.message ?? String(e));
+            Alert.alert(t('error'), e?.message ?? String(e));
           } finally {
             setBusy(false);
           }
@@ -134,80 +132,78 @@ export default function EmployeeHome({ profile }: { profile: UserProfile }) {
       contentContainerStyle={{ padding: 16, paddingTop: 56 }}
       refreshControl={<RefreshControl refreshing={false} onRefresh={refreshState} />}
     >
-      <Text style={{ fontSize: 22, fontWeight: '800', color: colors.text }}>Salom, {profile.name}</Text>
+      <Text style={{ fontSize: 22, fontWeight: '800', color: colors.text }}>{t('hello', { name: profile.name })}</Text>
       <Muted>
-        {profile.position} · {shift.name}: {shift.start}–{shift.end}
+        {tPosition(profile.position)} · {shiftName(shift)}: {shift.start}–{shift.end}
       </Muted>
 
       <Card style={{ marginTop: 16 }}>
         {session ? (
           <>
-            <H>Ish davom etmoqda</H>
-            <Row label="Boshlangan" value={fmtTime(session.start)} />
+            <H>{t('workInProgress')}</H>
+            <Row label={t('started')} value={fmtTime(session.start)} />
             <Row
-              label="Kechikish"
-              value={session.lateMinutes > settings.graceMinutes ? `${session.lateMinutes} daq` : "Yo'q"}
+              label={t('lateness')}
+              value={session.lateMinutes > settings.graceMinutes ? t('minutesShort', { n: session.lateMinutes }) : t('no')}
               color={session.lateMinutes > settings.graceMinutes ? colors.red : colors.green}
             />
-            <Row label="Ofisda" value={fmtHours(session.insideMs)} />
-            <Row label="Topshiriqda" value={fmtHours(session.taskMs)} />
-            <Row label="Tashqarida" value={fmtHours(session.outsideMs)} color={colors.orange} />
+            <Row label={t('inOffice')} value={fmtHours(session.insideMs)} />
+            <Row label={t('onTask')} value={fmtHours(session.taskMs)} />
+            <Row label={t('outside')} value={fmtHours(session.outsideMs)} color={colors.orange} />
             <Row
-              label="Hozir"
-              value={session.lastState === 'inside' ? 'Ofisda' : session.lastState === 'task' ? 'Topshiriqda' : 'Tashqarida'}
+              label={t('now')}
+              value={session.lastState === 'inside' ? t('inOffice') : session.lastState === 'task' ? t('onTask') : t('outside')}
             />
-            <Button title="Ishni tugatish" color={colors.red} onPress={onCheckOut} loading={busy} />
+            <Button title={t('finishWork')} color={colors.red} onPress={onCheckOut} loading={busy} />
           </>
         ) : (
           <>
-            <H>Ish boshlanmagan</H>
-            <Muted>Ofisga kelganingizda tugmani bosing. Joylashuvingiz tekshiriladi.</Muted>
-            <Button title="Ishni boshlash" color={colors.green} onPress={onCheckIn} loading={busy} style={{ marginTop: 12 }} />
+            <H>{t('notStarted')}</H>
+            <Muted>{t('startHint')}</Muted>
+            <Button title={t('startWork')} color={colors.green} onPress={onCheckIn} loading={busy} style={{ marginTop: 12 }} />
           </>
         )}
         {!backgroundSupported && (
-          <Muted>
-            Test rejimi (Expo Go, iPhone): kuzatuv faqat ilova ochiq turganda ishlaydi.
-          </Muted>
+          <Muted>{t('expoGoNote')}</Muted>
         )}
       </Card>
 
       <Card>
-        <H>Topshiriqlar</H>
-        {openTasks.length === 0 && <Muted>Faol topshiriq yo'q</Muted>}
+        <H>{t('tasks')}</H>
+        {openTasks.length === 0 && <Muted>{t('noActiveTasks')}</Muted>}
         {openTasks.map((t) => (
           <View key={t.id} style={{ borderTopWidth: 1, borderColor: colors.border, paddingTop: 8, marginTop: 8 }}>
             <Text style={{ fontWeight: '700', fontSize: 15 }}>{t.title}</Text>
             <Muted>{t.address}</Muted>
-            <Row label="Yetib borish muddati" value={fmtDateTime(t.deadline)} color={Date.now() > t.deadline && t.status === 'pending' ? colors.red : undefined} />
+            <Row label={tr('arriveBy')} value={fmtDateTime(t.deadline)} color={Date.now() > t.deadline && t.status === 'pending' ? colors.red : undefined} />
             <Row
-              label="Holat"
-              value={t.status === 'arrived' ? (t.onTime ? "Yetib keldingiz (o'z vaqtida)" : 'Yetib keldingiz (kechikib)') : 'Yo\'lda'}
+              label={tr('status')}
+              value={t.status === 'arrived' ? (t.onTime ? tr('arrivedOnTime') : tr('arrivedLate')) : tr('onTheWay')}
             />
             <View style={{ flexDirection: 'row', gap: 8 }}>
               <Button
-                title="Xaritada ochish"
+                title={tr('openInMaps')}
                 outline
                 style={{ flex: 1 }}
                 onPress={() => Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${t.lat},${t.lng}`)}
               />
-              <Button title="Bajarildi" style={{ flex: 1 }} onPress={() => markDone(t)} disabled={t.status !== 'arrived'} />
+              <Button title={tr('done')} style={{ flex: 1 }} onPress={() => markDone(t)} disabled={t.status !== 'arrived'} />
             </View>
           </View>
         ))}
       </Card>
 
       <Card>
-        <H>Shu oy ({month})</H>
-        <Row label="Ishlangan smenalar" value={`${report.shifts} / ${profile.plannedShifts}`} />
-        <Row label="Kechikishlar" value={`${report.lateCount} marta`} />
-        <Row label="Hisoblangan vaqt" value={fmtHours(report.paidMs)} />
+        <H>{t('thisMonth', { m: month })}</H>
+        <Row label={t('shiftsWorked')} value={`${report.shifts} / ${profile.plannedShifts}`} />
+        <Row label={t('lateness')} value={t('lateTimes', { n: report.lateCount })} />
+        <Row label={t('countedTime')} value={fmtHours(report.paidMs)} />
         <Row label="KPI" value={`${report.kpi.total.toFixed(0)}%`} />
-        <Row label="Taxminiy maosh" value={fmtMoney(report.salary.total)} color={colors.primary} />
+        <Row label={t('estSalary')} value={fmtMoney(report.salary.total)} color={colors.primary} />
       </Card>
 
-      <Button title="Chiqish" outline color={colors.muted} onPress={() => {
-        if (sessionId) return Alert.alert('Avval ishni tugating');
+      <Button title={t('logout')} outline color={colors.muted} onPress={() => {
+        if (sessionId) return Alert.alert(t('finishFirst'));
         signOut(auth);
       }} />
     </ScrollView>

@@ -1,10 +1,11 @@
 import { doc, setDoc, updateDoc } from 'firebase/firestore';
+import { t, tPosition } from '../../lib/i18n';
 import React, { useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { Button, Card, Chips, colors, Field, H, Muted } from '../../components/ui';
 import { phoneToEmail } from '../../lib/defaults';
 import { createLoginAccount, db } from '../../lib/firebase';
-import { fmtMoney, getShift } from '../../lib/time';
+import { fmtMoney, getShift, shiftName } from '../../lib/time';
 import { Settings, ShiftId, UserProfile } from '../../lib/types';
 import { useEmployees } from './useAdminData';
 
@@ -62,10 +63,10 @@ export default function StaffTab({ settings }: { settings: Settings }) {
   const save = async () => {
     if (!form) return;
     if (!form.name.trim() || form.phone.replace(/\D/g, '').length < 9) {
-      return Alert.alert('Xato', 'Ism va telefon raqamni to\'liq kiriting');
+      return Alert.alert(t('error'), t('needNamePhone'));
     }
     if (!editing && form.password.length < 6) {
-      return Alert.alert('Xato', "Parol kamida 6 belgi bo'lsin");
+      return Alert.alert(t('error'), t('passwordShort'));
     }
     setSaving(true);
     try {
@@ -83,15 +84,12 @@ export default function StaffTab({ settings }: { settings: Settings }) {
       } else {
         const uid = await createLoginAccount(phoneToEmail(form.phone), form.password);
         await setDoc(doc(db, 'users', uid), { uid, role: 'employee', active: true, ...data });
-        Alert.alert(
-          "Xodim qo'shildi",
-          `Xodimga quyidagini yuboring:\n\nLogin: ${form.phone}\nParol: ${form.password}`,
-        );
+        Alert.alert(t('staffAdded'), t('sendCredentials', { phone: form.phone, password: form.password }));
       }
       setForm(null);
     } catch (e: any) {
       const msg = String(e?.code ?? e?.message ?? e);
-      Alert.alert('Xato', msg.includes('email-already-in-use') ? 'Bu raqam allaqachon ro\'yxatdan o\'tgan' : msg);
+      Alert.alert(t('error'), msg.includes('email-already-in-use') ? t('phoneTaken') : msg);
     } finally {
       setSaving(false);
     }
@@ -99,11 +97,11 @@ export default function StaffTab({ settings }: { settings: Settings }) {
 
   const toggleActive = (u: UserProfile) =>
     Alert.alert(
-      u.active === false ? 'Faollashtirish' : "O'chirish",
-      u.active === false ? `${u.name} qayta faollashtirilsinmi?` : `${u.name} ishdan bo'shatilsinmi? Ilovaga kira olmaydi.`,
+      u.active === false ? t('activate') : t('deactivate'),
+      t(u.active === false ? 'activateConfirm' : 'deactivateConfirm', { name: u.name }),
       [
-        { text: 'Bekor' },
-        { text: 'Ha', onPress: () => updateDoc(doc(db, 'users', u.uid), { active: u.active === false }) },
+        { text: t('cancel') },
+        { text: t('yes'), onPress: () => updateDoc(doc(db, 'users', u.uid), { active: u.active === false }) },
       ],
     );
 
@@ -111,29 +109,29 @@ export default function StaffTab({ settings }: { settings: Settings }) {
     return (
       <ScrollView contentContainerStyle={{ padding: 16 }}>
         <Card>
-          <H>{editing ? 'Xodimni tahrirlash' : 'Yangi xodim'}</H>
-          <Field label="Ism familiya" value={form.name} onChangeText={set('name')} />
+          <H>{editing ? t('editStaff') : t('newStaff')}</H>
+          <Field label={t('fullName')} value={form.name} onChangeText={set('name')} />
           <Field
-            label="Telefon raqam (login)"
+            label={t('phoneLogin')}
             value={form.phone}
             onChangeText={set('phone')}
             keyboardType="phone-pad"
             editable={!editing}
           />
-          {!editing && <Field label="Parol (kamida 6 belgi)" value={form.password} onChangeText={set('password')} />}
-          <Text style={{ color: colors.muted, marginBottom: 4 }}>Lavozim</Text>
-          <Chips options={POSITIONS.map((p) => ({ value: p, label: p }))} value={form.position} onChange={set('position')} />
-          <Text style={{ color: colors.muted, marginBottom: 4 }}>Smena</Text>
+          {!editing && <Field label={t('passwordMin')} value={form.password} onChangeText={set('password')} />}
+          <Text style={{ color: colors.muted, marginBottom: 4 }}>{t('position')}</Text>
+          <Chips options={POSITIONS.map((p) => ({ value: p, label: tPosition(p) }))} value={form.position} onChange={set('position')} />
+          <Text style={{ color: colors.muted, marginBottom: 4 }}>{t('shift')}</Text>
           <Chips
-            options={settings.shifts.map((s) => ({ value: s.id, label: `${s.name} ${s.start}–${s.end}` }))}
+            options={settings.shifts.map((s) => ({ value: s.id, label: `${shiftName(s)} ${s.start}–${s.end}` }))}
             value={form.shift}
             onChange={(v) => setForm({ ...form, shift: v })}
           />
-          <Field label="Asosiy oylik (so'm)" value={form.baseSalary} onChangeText={set('baseSalary')} keyboardType="numeric" />
-          <Field label="KPI bonus — 100% bo'lganda (so'm)" value={form.kpiBonus} onChangeText={set('kpiBonus')} keyboardType="numeric" />
-          <Field label="Oyda rejadagi smenalar soni" value={form.plannedShifts} onChangeText={set('plannedShifts')} keyboardType="numeric" />
-          <Button title="Saqlash" onPress={save} loading={saving} />
-          <Button title="Bekor qilish" outline onPress={() => setForm(null)} />
+          <Field label={t('baseSalary')} value={form.baseSalary} onChangeText={set('baseSalary')} keyboardType="numeric" />
+          <Field label={t('kpiBonusLabel')} value={form.kpiBonus} onChangeText={set('kpiBonus')} keyboardType="numeric" />
+          <Field label={t('plannedShiftsLabel')} value={form.plannedShifts} onChangeText={set('plannedShifts')} keyboardType="numeric" />
+          <Button title={t('save')} onPress={save} loading={saving} />
+          <Button title={t('cancel')} outline onPress={() => setForm(null)} />
         </Card>
       </ScrollView>
     );
@@ -141,7 +139,7 @@ export default function StaffTab({ settings }: { settings: Settings }) {
 
   return (
     <ScrollView contentContainerStyle={{ padding: 16 }}>
-      <Button title="+ Xodim qo'shish" onPress={openNew} />
+      <Button title={t('addStaff')} onPress={openNew} />
       {employees.map((u) => {
         const sh = getShift(settings, u.shift);
         return (
@@ -149,16 +147,16 @@ export default function StaffTab({ settings }: { settings: Settings }) {
             <Pressable onPress={() => openEdit(u)}>
               <Text style={{ fontSize: 16, fontWeight: '700' }}>{u.name}</Text>
               <Muted>
-                {u.position} · {sh.name} ({sh.start}–{sh.end}) · {u.phone}
+                {tPosition(u.position)} · {shiftName(sh)} ({sh.start}–{sh.end}) · {u.phone}
               </Muted>
               <Muted>
-                Oylik: {fmtMoney(u.baseSalary)} · KPI bonus: {fmtMoney(u.kpiBonus)} · Reja: {u.plannedShifts} smena
+                {t('staffSummary', { base: fmtMoney(u.baseSalary), bonus: fmtMoney(u.kpiBonus), n: u.plannedShifts })}
               </Muted>
             </Pressable>
             <View style={{ flexDirection: 'row', gap: 8 }}>
-              <Button title="Tahrirlash" outline style={{ flex: 1 }} onPress={() => openEdit(u)} />
+              <Button title={t('edit')} outline style={{ flex: 1 }} onPress={() => openEdit(u)} />
               <Button
-                title={u.active === false ? 'Faollashtirish' : "O'chirish"}
+                title={u.active === false ? t('activate') : t('deactivate')}
                 outline
                 color={u.active === false ? colors.green : colors.red}
                 style={{ flex: 1 }}

@@ -1,12 +1,14 @@
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { LANGS, t, useI18n } from '../lib/i18n';
 import { doc, getDoc, writeBatch } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
-import { Button, Card, colors, Field, Muted } from '../components/ui';
+import { Button, Card, Chips, colors, Field, Muted } from '../components/ui';
 import { DEFAULT_SETTINGS, phoneToEmail } from '../lib/defaults';
 import { auth, db } from '../lib/firebase';
 
 export default function LoginScreen() {
+  const { lang, setLang } = useI18n();
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -25,7 +27,7 @@ export default function LoginScreen() {
     try {
       await signInWithEmailAndPassword(auth, phoneToEmail(phone), password);
     } catch {
-      Alert.alert('Xato', "Telefon raqam yoki parol noto'g'ri");
+      Alert.alert(t('error'), t('loginFailed'));
     } finally {
       setLoading(false);
     }
@@ -34,7 +36,7 @@ export default function LoginScreen() {
   // Birinchi foydalanuvchi — rahbar. Firestore qoidalari faqat bir marta ruxsat beradi.
   const setupAdmin = async () => {
     if (!name.trim() || password.length < 6) {
-      Alert.alert('Xato', "Ism kiriting, parol kamida 6 belgi bo'lsin");
+      Alert.alert(t('error'), t('setupNeedName'));
       return;
     }
     setLoading(true);
@@ -58,7 +60,7 @@ export default function LoginScreen() {
       batch.set(doc(db, 'settings', 'main'), DEFAULT_SETTINGS);
       await batch.commit();
     } catch (e: any) {
-      Alert.alert('Xato', e?.message ?? String(e));
+      Alert.alert(t('error'), e?.message ?? String(e));
     } finally {
       setLoading(false);
     }
@@ -69,34 +71,35 @@ export default function LoginScreen() {
       <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 80 }}>
         <View style={{ alignItems: 'center', marginBottom: 28 }}>
           <Text style={{ fontSize: 30, fontWeight: '800', color: colors.primary }}>WITHUS TRIP</Text>
-          <Text style={{ fontSize: 16, color: colors.muted, marginTop: 4 }}>Xodimlar davomati</Text>
+          <Text style={{ fontSize: 16, color: colors.muted, marginTop: 4 }}>{t('appSubtitle')}</Text>
         </View>
+        <Chips options={LANGS} value={lang} onChange={setLang} />
         <Card>
           {mode === 'setup' && (
-            <Field label="Ismingiz" value={name} onChangeText={setName} placeholder="Rahbar ismi" />
+            <Field label={t('yourName')} value={name} onChangeText={setName} placeholder={t('directorName')} />
           )}
           <Field
-            label="Telefon raqam"
+            label={t('phone')}
             value={phone}
             onChangeText={setPhone}
             keyboardType="phone-pad"
             placeholder="90 123 45 67"
           />
-          <Field label="Parol" value={password} onChangeText={setPassword} secureTextEntry />
+          <Field label={t('password')} value={password} onChangeText={setPassword} secureTextEntry />
           {mode === 'login' ? (
-            <Button title="Kirish" onPress={login} loading={loading} />
+            <Button title={t('login')} onPress={login} loading={loading} />
           ) : (
-            <Button title="Rahbar hisobini yaratish" onPress={setupAdmin} loading={loading} />
+            <Button title={t('createDirector')} onPress={setupAdmin} loading={loading} />
           )}
         </Card>
         {adminExists === false && mode === 'login' && (
           <Card>
-            <Muted>Tizimda hali rahbar yo'q. Birinchi marta ochayotgan bo'lsangiz:</Muted>
-            <Button title="Rahbar sifatida ro'yxatdan o'tish" outline onPress={() => setMode('setup')} />
+            <Muted>{t('noDirectorYet')}</Muted>
+            <Button title={t('registerDirector')} outline onPress={() => setMode('setup')} />
           </Card>
         )}
-        {mode === 'setup' && <Button title="Orqaga" outline onPress={() => setMode('login')} />}
-        <Muted>Xodimlarga login va parolni rahbar beradi.</Muted>
+        {mode === 'setup' && <Button title={t('back')} outline onPress={() => setMode('login')} />}
+        <Muted>{t('credentialsFromDirector')}</Muted>
       </ScrollView>
     </KeyboardAvoidingView>
   );

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { t, tPosition } from '../../lib/i18n';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { LeafletMap, MapMarker } from '../../components/LeafletMap';
 import { Card, colors, Muted } from '../../components/ui';
@@ -40,25 +41,25 @@ export default function MapTab({ settings }: { settings: Settings }) {
           let color: string;
           if (working && l) {
             if (now - l.ts > STALE_MS) {
-              status = `Signal yo'q (${fmtTime(l.ts)} dan beri)`;
+              status = t('noSignalSince', { t: fmtTime(l.ts) });
               color = colors.gray;
             } else if (l.inside) {
-              status = 'Ofisda';
+              status = t('inOffice');
               color = colors.green;
             } else if (task) {
-              status = `Topshiriqda: ${task.title}`;
+              status = t('onTaskTitle', { title: task.title });
               color = colors.primary;
             } else {
               const d = Math.round(distanceM(l.lat, l.lng, settings.office.lat, settings.office.lng));
-              status = `Ofisdan tashqarida (${d} m)`;
+              status = t('outsideOffice', { d });
               color = colors.orange;
             }
             if (l.mocked) status += ' · FAKE GPS!';
           } else if (onShift && !startedThisShift) {
-            status = 'Kelmagan';
+            status = t('absent');
             color = colors.red;
           } else {
-            status = onShift ? 'Ishni tugatgan' : 'Smenada emas';
+            status = onShift ? t('finishedShift') : t('offShift');
             color = colors.gray;
           }
           return { e, l, working, status, color };
@@ -84,7 +85,7 @@ export default function MapTab({ settings }: { settings: Settings }) {
       </View>
       <ScrollView contentContainerStyle={{ padding: 12 }}>
         <Card>
-          {rows.length === 0 && <Muted>Xodimlar qo'shilmagan. "Xodimlar" bo'limiga o'ting.</Muted>}
+          {rows.length === 0 && <Muted>{t('noStaffYet')}</Muted>}
           {rows.map((r) => (
             <Pressable
               key={r.e.uid}
@@ -94,7 +95,7 @@ export default function MapTab({ settings }: { settings: Settings }) {
               <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: r.color }} />
               <View style={{ flex: 1 }}>
                 <Text style={{ fontWeight: '600', fontSize: 15 }}>
-                  {r.e.name} <Text style={{ color: colors.muted, fontWeight: '400' }}>· {r.e.position}</Text>
+                  {r.e.name} <Text style={{ color: colors.muted, fontWeight: '400' }}>· {tPosition(r.e.position)}</Text>
                 </Text>
                 <Text style={{ color: r.color, fontSize: 13 }}>{r.status}</Text>
               </View>

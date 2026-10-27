@@ -1,0 +1,7 @@
+{
+  "ios": {
+    "CFBundleDisplayName": "WITHUS Davomat",
+    "NSLocationAlwaysAndWhenInUseUsageDescription": "Your location is used during working hours to know whether you are at the office or at a task address. Tracking runs only between \"Start work\" and \"Finish work\".",
+    "NSLocationWhenInUseUsageDescription": "Your location is used to confirm that you arrived at the office."
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "ios": {
+    "CFBundleDisplayName": "WITHUS Davomat",
+    "NSLocationAlwaysAndWhenInUseUsageDescription": "Ish vaqtida ofisda yoki topshiriq manzilida ekaningizni aniqlash uchun joylashuvingiz kerak. Kuzatuv faqat \"Ishni boshlash\" va \"Ishni tugatish\" orasida ishlaydi.",
+    "NSLocationWhenInUseUsageDescription": "Ishga kelganingizni ofis hududi bo'yicha tasdiqlash uchun joylashuvingiz kerak."
+  }
+}

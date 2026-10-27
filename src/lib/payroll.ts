@@ -1,4 +1,5 @@
 import { shiftDurationMs, getShift } from './time';
+import { t, tPosition } from './i18n';
 import { Session, Settings, UserProfile, WorkTask } from './types';
 
 export interface MonthReport {
@@ -103,16 +104,16 @@ export function reportsToCsv(month: string, reports: MonthReport[]): string {
   const r = (n: number) => Math.round(n);
   const rows = [
     [
-      'Oy', 'Xodim', 'Lavozim', 'Smenalar', 'Kechikishlar', 'Jarima daqiqa', 'Ofisda (soat)',
-      'Topshiriqda (soat)', 'Sababsiz tashqarida (soat)', "Signal yo'q (soat)", "Hisoblangan soat",
-      'Reja (soat)', 'Topshiriqlar', "O'z vaqtida", 'KPI %', 'Asosiy', 'KPI bonus', 'Jarima', 'Jami maosh',
-      'Fake GPS',
+      t('csvMonth'), t('employee'), t('position'), t('shifts'), t('csvLates'), t('csvPenaltyMin'),
+      t('csvInside'), t('csvTask'), t('csvOutside'), t('csvUnknown'), t('csvPaid'), t('csvPlanned'),
+      t('csvTasks'), t('csvTasksOnTime'), 'KPI %', t('csvBase'), t('kpiBonus'), t('csvPenalty'),
+      t('csvTotal'), 'Fake GPS',
     ],
     ...reports.map((x) => [
-      month, x.user.name, x.user.position, x.shifts, x.lateCount, x.lateMinutes, h(x.insideMs),
+      month, x.user.name, tPosition(x.user.position), x.shifts, x.lateCount, x.lateMinutes, h(x.insideMs),
       h(x.taskMs), h(x.outsideMs), h(x.unknownMs), h(x.paidMs), h(x.plannedMs), x.tasksTotal,
       x.tasksOnTime, x.kpi.total.toFixed(1), r(x.salary.base), r(x.salary.bonus),
-      r(x.salary.penalty), r(x.salary.total), x.mockDetected ? 'HA' : '',
+      r(x.salary.penalty), r(x.salary.total), x.mockDetected ? t('csvYes') : '',
     ]),
   ];
   return '﻿' + rows.map((row) => row.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(';')).join('\n');

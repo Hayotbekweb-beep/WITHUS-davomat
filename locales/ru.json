@@ -1,0 +1,7 @@
+{
+  "ios": {
+    "CFBundleDisplayName": "WITHUS Davomat",
+    "NSLocationAlwaysAndWhenInUseUsageDescription": "Геолокация нужна, чтобы в рабочее время определять, находитесь ли вы в офисе или по адресу задания. Учёт работает только между «Начать работу» и «Завершить работу».",
+    "NSLocationWhenInUseUsageDescription": "Геолокация нужна, чтобы подтвердить ваш приход в офис."
+  }
+}
