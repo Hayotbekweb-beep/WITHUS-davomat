@@ -53,8 +53,9 @@ Barcha foiz va summalarni "Sozlamalar" va "Xodimlar" bo'limidan o'zgartirish mum
 4. Firestore → **Rules** bo'limiga shu repodagi [`firestore.rules`](firestore.rules) faylining matnini to'liq qo'yib **Publish** bosing.
 5. **Project settings (⚙️) → Your apps → Web (`</>`)** → ilova qo'shing → ko'rsatilgan `firebaseConfig` qiymatlarini nusxalang.
 
-### 2. GitHub Secrets
-Repo → **Settings → Secrets and variables → Actions → New repository secret** — quyidagi 6 tasini qo'shing:
+### 2. GitHub Secrets (ixtiyoriy)
+WITHUS TRIP Firebase loyihasi (`withus-davomat`) kalitlari [`src/lib/firebase.ts`](src/lib/firebase.ts) ichida yozilgan — bu qadam **shart emas**.
+Boshqa Firebase loyihasiga ulash kerak bo'lsa: Repo → **Settings → Secrets and variables → Actions → New repository secret** — quyidagi 6 tasini qo'shing:
 
 | Secret nomi | firebaseConfig dagi qiymat |
 |---|---|
