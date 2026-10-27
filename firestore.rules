@@ -1,0 +1,59 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function userPath(uid) { return /databases/$(database)/documents/users/$(uid); }
+    function adminPath() { return /databases/$(database)/documents/meta/admin; }
+    function profile() { return get(userPath(request.auth.uid)).data; }
+    function isAdmin() { return signedIn() && exists(userPath(request.auth.uid)) && profile().role == 'admin'; }
+    function isActive() { return signedIn() && exists(userPath(request.auth.uid)) && profile().active == true; }
+    // Birinchi rahbarni ro'yxatdan o'tkazish (faqat bir marta, meta/admin bilan bir batch'da)
+    function bootstrappingAdmin() {
+      return signedIn() && !exists(adminPath()) && getAfter(adminPath()).data.uid == request.auth.uid;
+    }
+    function nearNow(ms) {
+      return ms > request.time.toMillis() - 600000 && ms < request.time.toMillis() + 600000;
+    }
+
+    match /meta/admin {
+      allow read: if true;
+      allow create: if signedIn() && !exists(adminPath()) && request.resource.data.uid == request.auth.uid;
+    }
+
+    match /settings/{id} {
+      allow read: if signedIn();
+      allow write: if isAdmin() || bootstrappingAdmin();
+    }
+
+    match /users/{uid} {
+      allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
+      allow create: if (isAdmin() && request.resource.data.role == 'employee')
+        || (request.auth.uid == uid && request.resource.data.role == 'admin' && bootstrappingAdmin());
+      allow update: if isAdmin() && request.resource.data.role == resource.data.role;
+      allow delete: if false;
+    }
+
+    match /sessions/{id} {
+      allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow create: if isActive() && request.resource.data.uid == request.auth.uid
+        && nearNow(request.resource.data.start);
+      allow update: if isAdmin() || (isActive() && resource.data.uid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(
+          ['insideMs', 'taskMs', 'outsideMs', 'unknownMs', 'lastTs', 'lastState', 'mockDetected', 'end', 'endedOutside']));
+      allow delete: if isAdmin();
+    }
+
+    match /live/{uid} {
+      allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
+      allow write: if isActive() && request.auth.uid == uid;
+    }
+
+    match /tasks/{id} {
+      allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || (isActive() && resource.data.uid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'arrivedAt', 'onTime', 'doneAt'])
+        && request.resource.data.status in ['arrived', 'done']);
+    }
+  }
+}

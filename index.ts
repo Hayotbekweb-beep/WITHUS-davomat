@@ -1,5 +1,8 @@
 import { registerRootComponent } from 'expo';
 
+// Fon geolokatsiya vazifasi ilova ishga tushishidan oldin e'lon qilinishi shart
+import './src/lib/tracking';
+
 import App from './App';
 
 // registerRootComponent calls AppRegistry.registerComponent('main', () => App);

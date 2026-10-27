@@ -1,25 +1,46 @@
 {
   "expo": {
-    "name": "withus-davomat",
+    "name": "WITHUS Davomat",
     "slug": "withus-davomat",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "uz.withustrip.davomat",
+      "infoPlist": {
+        "UIBackgroundModes": ["location", "fetch"]
+      }
     },
     "android": {
+      "package": "uz.withustrip.davomat",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION"
+      ],
       "predictiveBackGestureEnabled": false
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    }
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Ish vaqtida ofisda yoki topshiriq manzilida ekaningizni aniqlash uchun joylashuvingiz kerak. Kuzatuv faqat \"Ishni boshlash\" va \"Ishni tugatish\" orasida ishlaydi.",
+          "locationWhenInUsePermission": "Ishga kelganingizni ofis hududi bo'yicha tasdiqlash uchun joylashuvingiz kerak.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ]
+    ]
   }
 }
