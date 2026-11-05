@@ -1,4 +1,4 @@
-import { shiftDurationMs, getShift } from './time';
+import { shiftDurationMs, userShift } from './time';
 import { t, tPosition } from './i18n';
 import { Session, Settings, UserProfile, WorkTask } from './types';
 
@@ -28,7 +28,7 @@ export function buildReport(
   tasks: WorkTask[],
   settings: Settings,
 ): MonthReport {
-  const shift = getShift(settings, user.shift);
+  const shift = userShift(settings, user);
   const shiftMs = shiftDurationMs(shift);
   const own = sessions.filter((s) => s.uid === user.uid);
 

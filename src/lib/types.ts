@@ -6,6 +6,7 @@ export interface Shift {
   name: string;
   start: string; // "HH:MM"
   end: string; // "HH:MM" (keyingi kunga o'tishi mumkin)
+  custom?: boolean; // xodim shartnomasidagi individual vaqt
 }
 
 export interface Settings {
@@ -23,6 +24,10 @@ export interface UserProfile {
   role: Role;
   position: string; // Operator, Kassir...
   shift: ShiftId;
+  // Shartnoma bo'yicha individual ish vaqti; bo'sh bo'lsa smena vaqti olinadi
+  workStart?: string; // "HH:MM"
+  workEnd?: string; // "HH:MM"
+  workDays?: number[]; // ish kunlari: 0 = yakshanba ... 6 = shanba; bo'sh = har kuni
   baseSalary: number; // oylik asosiy maosh (so'm)
   kpiBonus: number; // KPI 100% bo'lganda beriladigan bonus (so'm)
   plannedShifts: number; // oyda rejalashtirilgan smenalar soni

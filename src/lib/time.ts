@@ -1,4 +1,4 @@
-import { Settings, Shift, ShiftId } from './types';
+import { Settings, Shift, ShiftId, UserProfile } from './types';
 import { t } from './i18n';
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -63,4 +63,25 @@ export function isShiftNow(shift: Shift, now: number): boolean {
   return now >= prev && now <= prev + shiftDurationMs(shift);
 }
 
-export const shiftName = (shift: Shift) => t(shift.id === 'night' ? 'shift_night' : 'shift_day');
+export const shiftName = (shift: Shift) =>
+  t(shift.custom ? 'customHours' : shift.id === 'night' ? 'shift_night' : 'shift_day');
+
+// Xodimning haqiqiy ish vaqti: shartnomadagi individual vaqt, bo'lmasa smena vaqti
+export function userShift(
+  settings: Settings,
+  u: Pick<UserProfile, 'shift' | 'workStart' | 'workEnd'>,
+): Shift {
+  const base = getShift(settings, u.shift);
+  if (u.workStart && u.workEnd) {
+    const custom = u.workStart !== base.start || u.workEnd !== base.end;
+    return { ...base, start: u.workStart, end: u.workEnd, custom };
+  }
+  return base;
+}
+
+// Shu kun xodimning shartnoma bo'yicha ish kunimi
+export function isWorkDay(u: Pick<UserProfile, 'workDays'>, ms: number): boolean {
+  return !u.workDays?.length || u.workDays.includes(new Date(ms).getDay());
+}
+
+export const isValidHM = (s: string) => /^([01]\d|2[0-3]):[0-5]\d$/.test(s);

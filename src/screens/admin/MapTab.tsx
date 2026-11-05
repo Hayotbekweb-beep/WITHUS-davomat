@@ -4,7 +4,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import { LeafletMap, MapMarker } from '../../components/LeafletMap';
 import { Card, colors, Muted } from '../../components/ui';
 import { distanceM } from '../../lib/geo';
-import { dayKey, fmtTime, getShift, isShiftNow, monthKey, scheduleFor } from '../../lib/time';
+import { dayKey, fmtTime, isShiftNow, isWorkDay, monthKey, scheduleFor, userShift } from '../../lib/time';
 import { Settings } from '../../lib/types';
 import { useEmployees, useLive, useMonthSessions, useTasks } from './useAdminData';
 
@@ -30,11 +30,13 @@ export default function MapTab({ settings }: { settings: Settings }) {
         .map((e) => {
           const l = live.find((x) => x.uid === e.uid);
           const working = !!l?.sessionId;
-          const shift = getShift(settings, e.shift);
+          const shift = userShift(settings, e);
           const onShift = isShiftNow(shift, now);
           // Hozirgi smena qaysi kuni boshlangan
           const sched = scheduleFor(shift, now);
-          const shiftDay = dayKey(sched.start <= now ? sched.start : sched.start - 86400000);
+          const shiftStartMs = sched.start <= now ? sched.start : sched.start - 86400000;
+          const shiftDay = dayKey(shiftStartMs);
+          const workDay = isWorkDay(e, shiftStartMs);
           const startedThisShift = sessions.some((s) => s.uid === e.uid && s.day === shiftDay);
           const task = tasks.find((t) => t.uid === e.uid && (t.status === 'pending' || t.status === 'arrived'));
           let status: string;
@@ -55,6 +57,9 @@ export default function MapTab({ settings }: { settings: Settings }) {
               color = colors.orange;
             }
             if (l.mocked) status += ' · FAKE GPS!';
+          } else if (onShift && !workDay) {
+            status = t('dayOff');
+            color = colors.gray;
           } else if (onShift && !startedThisShift) {
             status = t('absent');
             color = colors.red;

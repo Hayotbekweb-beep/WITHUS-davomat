@@ -17,7 +17,7 @@ import {
 import { Platform } from 'react-native';
 import { auth, db } from './firebase';
 import { distanceM, isInside } from './geo';
-import { dayKey, getShift, monthKey, scheduleFor } from './time';
+import { dayKey, monthKey, scheduleFor, userShift } from './time';
 import { Settings, UserProfile, WorkTask } from './types';
 
 export const LOCATION_TASK = 'withus-location-task';
@@ -202,7 +202,7 @@ export async function checkIn(profile: UserProfile, settings: Settings) {
   }
 
   const now = Date.now();
-  const shift = getShift(settings, profile.shift);
+  const shift = userShift(settings, profile);
   const sched = scheduleFor(shift, now);
   const lateMinutes = Math.max(0, Math.round((now - sched.start) / 60000));
 

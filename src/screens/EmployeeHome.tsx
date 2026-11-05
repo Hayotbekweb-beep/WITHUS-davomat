@@ -9,7 +9,7 @@ import { Button, Card, colors, H, Muted, Row } from '../components/ui';
 import { useSettings } from '../lib/data';
 import { auth, db } from '../lib/firebase';
 import { buildReport } from '../lib/payroll';
-import { fmtDateTime, fmtHours, fmtMoney, fmtTime, getShift, monthKey, shiftName } from '../lib/time';
+import { fmtDateTime, fmtHours, fmtMoney, fmtTime, monthKey, shiftName, userShift } from '../lib/time';
 import {
   backgroundSupported,
   checkIn,
@@ -30,7 +30,7 @@ export default function EmployeeHome({ profile }: { profile: UserProfile }) {
   const [busy, setBusy] = useState(false);
   const watchRef = useRef<Location.LocationSubscription | null>(null);
   const month = monthKey(Date.now());
-  const shift = getShift(settings, profile.shift);
+  const shift = userShift(settings, profile);
 
   const refreshState = useCallback(async () => {
     const st = await getTrackingState();
