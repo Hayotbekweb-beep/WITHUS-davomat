@@ -101,6 +101,21 @@ Noutbuk oynasi ochiq turgan paytda ilova ishlaydi. Firebase kalitlari kod ichida
 
 ---
 
+## Ofis serveri (iPhone va brauzer uchun web versiya)
+Har bir yig'ishda **Releases → latest** sahifasida `withus-davomat-web.zip` (sayt fayllari) va `withus-davomat-server-deploy.zip` (o'rnatish skriptlari) paydo bo'ladi.
+
+Talablar: statik tashqi IP, unga yo'naltirilgan domen (A yozuv), routerda 80 va 443 portlar ichki serverga yo'naltirilgan.
+
+```bash
+# Mac'dan serverga nusxalash (fayllar Downloads papkasida)
+scp ~/Downloads/withus-davomat-web.zip ~/Downloads/withus-davomat-server-deploy.zip root@192.168.0.202:/root/
+# Serverda o'rnatish (nginx + HTTPS). withus-bot va boshqa xizmatlarga tegmaydi
+ssh root@192.168.0.202 'cd /root && unzip -o withus-davomat-server-deploy.zip && bash deploy/install.sh DOMEN /root/withus-davomat-web.zip'
+# Keyingi yangilanishlar
+ssh root@192.168.0.202 'bash /root/deploy/update.sh /root/withus-davomat-web.zip'
+```
+iPhone'da: Safari → `https://DOMEN` → Ulashish → **Bosh ekranga qo'shish**. Joylashuv faqat ilova ochiq turganda kuzatiladi.
+
 ## Muhim: qonun va xodimlar roziligi
 O'zbekiston "Shaxsga doir ma'lumotlar to'g'risida"gi qonuniga ko'ra geolokatsiya — shaxsiy ma'lumot. Tavsiya:
 - Har bir xodimdan yozma **rozilik** oling (ish vaqtida joylashuv kuzatilishi, maqsadi — davomat, KPI va maosh hisobi).

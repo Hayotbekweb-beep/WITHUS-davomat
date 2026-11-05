@@ -48,6 +48,12 @@ jobs:
           name: withus-davomat-apk
           path: withus-davomat.apk
 
+      - name: Build web version (iPhone / brauzer)
+        run: |
+          npx expo export --platform web --output-dir web-dist
+          cd web-dist && zip -qr ../withus-davomat-web.zip .
+          cd .. && zip -qr withus-davomat-server-deploy.zip deploy
+
       - name: Publish to "latest" release
         if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
@@ -56,7 +62,11 @@ jobs:
           name: WITHUS Davomat (so'nggi versiya)
           prerelease: false
           make_latest: true
-          files: withus-davomat.apk
+          files: |
+            withus-davomat.apk
+            withus-davomat-web.zip
+            withus-davomat-server-deploy.zip
           body: |
-            Telefoningizda shu sahifani oching va `withus-davomat.apk` faylini yuklab o'rnating.
+            Android: telefonda shu sahifani oching va `withus-davomat.apk` ni yuklab o'rnating.
+            Ofis serveri (iPhone / brauzer): `withus-davomat-web.zip` va `withus-davomat-server-deploy.zip` — README dagi ko'rsatma bo'yicha.
             Commit: ${{ github.sha }}

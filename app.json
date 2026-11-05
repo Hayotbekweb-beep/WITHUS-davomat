@@ -50,6 +50,16 @@
       "uz": "./locales/uz.json",
       "ru": "./locales/ru.json",
       "en": "./locales/en.json"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "output": "single",
+      "name": "WITHUS Davomat",
+      "shortName": "Davomat",
+      "themeColor": "#0B5FFF",
+      "backgroundColor": "#F3F5F9",
+      "display": "standalone",
+      "lang": "uz"
     }
   }
 }
