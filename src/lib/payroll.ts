@@ -63,7 +63,7 @@ export function buildReport(
   const kpi = {
     punctuality: pct(own.length - lateCount, own.length, 0),
     attendance: pct(own.length, user.plannedShifts, 0),
-    presence: pct(insideMs + taskMs, insideMs + taskMs + outsideMs, 0),
+    presence: pct(insideMs + taskMs, insideMs + taskMs + outsideMs),
     tasks: pct(tasksOnTime, ownTasks.length),
     total: 0,
   };

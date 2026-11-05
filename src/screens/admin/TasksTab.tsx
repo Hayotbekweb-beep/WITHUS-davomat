@@ -1,8 +1,9 @@
 import * as Location from 'expo-location';
+import { showAlert } from '../../lib/alert';
 import { t as tr } from '../../lib/i18n';
 import { addDoc, collection, doc, updateDoc } from 'firebase/firestore';
 import React, { useState } from 'react';
-import { Alert, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { LeafletMap } from '../../components/LeafletMap';
 import { Button, Card, Chips, colors, Field, H, Muted, Row } from '../../components/ui';
 import { db } from '../../lib/firebase';
@@ -46,17 +47,17 @@ export default function TasksTab({ settings }: { settings: Settings }) {
   const findAddress = async () => {
     try {
       const r = await Location.geocodeAsync(`${address}, Toshkent`);
-      if (!r.length) return Alert.alert(tr('notFound'), tr('tapMapHint'));
+      if (!r.length) return showAlert(tr('notFound'), tr('tapMapHint'));
       setPoint({ lat: r[0].latitude, lng: r[0].longitude });
     } catch {
-      Alert.alert(tr('notFound'), tr('tapMapHint'));
+      showAlert(tr('notFound'), tr('tapMapHint'));
     }
   };
 
   const save = async () => {
     const emp = employees.find((e) => e.uid === uid);
     if (!emp || !title.trim() || !point) {
-      return Alert.alert(tr('error'), tr('taskNeedFields'));
+      return showAlert(tr('error'), tr('taskNeedFields'));
     }
     setSaving(true);
     try {
@@ -81,7 +82,7 @@ export default function TasksTab({ settings }: { settings: Settings }) {
       setAddress('');
       setPoint(null);
     } catch (e: any) {
-      Alert.alert(tr('error'), e?.message ?? String(e));
+      showAlert(tr('error'), e?.message ?? String(e));
     } finally {
       setSaving(false);
     }

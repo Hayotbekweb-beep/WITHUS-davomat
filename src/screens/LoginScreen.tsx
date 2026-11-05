@@ -1,8 +1,9 @@
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { showAlert } from '../lib/alert';
 import { LANGS, t, useI18n } from '../lib/i18n';
 import { doc, getDoc, writeBatch } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import { Button, Card, Chips, colors, Field, Muted } from '../components/ui';
 import { DEFAULT_SETTINGS, phoneToEmail } from '../lib/defaults';
 import { auth, db } from '../lib/firebase';
@@ -27,7 +28,7 @@ export default function LoginScreen() {
     try {
       await signInWithEmailAndPassword(auth, phoneToEmail(phone), password);
     } catch {
-      Alert.alert(t('error'), t('loginFailed'));
+      showAlert(t('error'), t('loginFailed'));
     } finally {
       setLoading(false);
     }
@@ -36,7 +37,7 @@ export default function LoginScreen() {
   // Birinchi foydalanuvchi — rahbar. Firestore qoidalari faqat bir marta ruxsat beradi.
   const setupAdmin = async () => {
     if (!name.trim() || password.length < 6) {
-      Alert.alert(t('error'), t('setupNeedName'));
+      showAlert(t('error'), t('setupNeedName'));
       return;
     }
     setLoading(true);
@@ -60,7 +61,7 @@ export default function LoginScreen() {
       batch.set(doc(db, 'settings', 'main'), DEFAULT_SETTINGS);
       await batch.commit();
     } catch (e: any) {
-      Alert.alert(t('error'), e?.message ?? String(e));
+      showAlert(t('error'), e?.message ?? String(e));
     } finally {
       setLoading(false);
     }

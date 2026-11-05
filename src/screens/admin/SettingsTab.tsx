@@ -1,9 +1,10 @@
 import * as Location from 'expo-location';
+import { showAlert } from '../../lib/alert';
 import { LANGS, t, useI18n } from '../../lib/i18n';
 import { shiftName } from '../../lib/time';
 import { signOut } from 'firebase/auth';
 import React, { useEffect, useState } from 'react';
-import { Alert, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { LeafletMap } from '../../components/LeafletMap';
 import { Button, Card, Chips, colors, Field, H, Muted } from '../../components/ui';
 import { saveSettings } from '../../lib/data';
@@ -20,10 +21,10 @@ export default function SettingsTab({ settings }: { settings: Settings }) {
 
   const useCurrent = async () => {
     const perm = await Location.requestForegroundPermissionsAsync();
-    if (perm.status !== 'granted') return Alert.alert(t('allowLocation'));
+    if (perm.status !== 'granted') return showAlert(t('allowLocation'));
     const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Highest });
     setOffice(loc.coords.latitude, loc.coords.longitude);
-    Alert.alert(t('marked'), t('markedAccuracy', { n: Math.round(loc.coords.accuracy ?? 0) }));
+    showAlert(t('marked'), t('markedAccuracy', { n: Math.round(loc.coords.accuracy ?? 0) }));
   };
 
   const setShift = (i: number, key: 'start' | 'end', v: string) =>
@@ -34,13 +35,13 @@ export default function SettingsTab({ settings }: { settings: Settings }) {
 
   const save = async () => {
     const bad = s.shifts.some((sh) => !/^\d{2}:\d{2}$/.test(sh.start) || !/^\d{2}:\d{2}$/.test(sh.end));
-    if (bad) return Alert.alert(t('error'), t('badTime'));
+    if (bad) return showAlert(t('error'), t('badTime'));
     setSaving(true);
     try {
       await saveSettings(s);
-      Alert.alert(t('saved'));
+      showAlert(t('saved'));
     } catch (e: any) {
-      Alert.alert(t('error'), e?.message ?? String(e));
+      showAlert(t('error'), e?.message ?? String(e));
     } finally {
       setSaving(false);
     }

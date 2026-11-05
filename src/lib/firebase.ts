@@ -3,6 +3,7 @@ import { FirebaseApp, getApp, getApps, initializeApp } from 'firebase/app';
 import {
   Auth,
   createUserWithEmailAndPassword,
+  connectAuthEmulator,
   getAuth,
   inMemoryPersistence,
   initializeAuth,
@@ -11,7 +12,7 @@ import {
 // React Native build'ida mavjud, lekin web tiplarida e'lon qilinmagan
 // @ts-ignore
 import { getReactNativePersistence } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore';
 
 // WITHUS TRIP Firebase loyihasi. Bu web-kalitlar maxfiy emas (har bir APK ichida bo'ladi),
 // ma'lumotlarni firestore.rules himoya qiladi. Boshqa loyihaga ulash uchun
@@ -41,6 +42,13 @@ export const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 export const auth = initAuth(app);
 export const db = getFirestore(app);
 
+// Faqat sinov uchun: EXPO_PUBLIC_FIREBASE_EMULATOR=127.0.0.1 bo'lsa mahalliy emulyatorga ulanadi
+const emulatorHost = process.env.EXPO_PUBLIC_FIREBASE_EMULATOR;
+if (emulatorHost) {
+  connectAuthEmulator(auth, `http://${emulatorHost}:9099`, { disableWarnings: true });
+  connectFirestoreEmulator(db, emulatorHost, 8085);
+}
+
 // Rahbar yangi xodim yaratganda o'z sessiyasidan chiqib ketmasligi uchun
 // alohida (ikkinchi) Firebase ilovasi orqali yaratiladi.
 export async function createLoginAccount(email: string, password: string): Promise<string> {
@@ -51,6 +59,9 @@ export async function createLoginAccount(email: string, password: string): Promi
     secAuth = initializeAuth(secondary, { persistence: inMemoryPersistence });
   } catch {
     secAuth = getAuth(secondary);
+  }
+  if (emulatorHost && !secAuth.emulatorConfig) {
+    connectAuthEmulator(secAuth, `http://${emulatorHost}:9099`, { disableWarnings: true });
   }
   const cred = await createUserWithEmailAndPassword(secAuth, email, password);
   await signOut(secAuth);

@@ -58,6 +58,7 @@ const saveState = (s: TrackingState) => AsyncStorage.setItem(STATE_KEY, JSON.str
 
 // Expo Go (iOS) fonda geolokatsiyani qo'llamaydi — u holda faqat ilova ochiqligida kuzatiladi
 export const backgroundSupported =
+  Platform.OS !== 'web' &&
   !(Platform.OS === 'ios' && Constants.executionEnvironment === ExecutionEnvironment.StoreClient);
 
 async function refreshTasks(st: TrackingState) {
@@ -154,10 +155,12 @@ async function processLocations(locations: Location.LocationObject[]) {
   }
 }
 
-TaskManager.defineTask<{ locations: Location.LocationObject[] }>(LOCATION_TASK, async ({ data, error }) => {
-  if (error || !data) return;
-  await handleLocations(data.locations);
-});
+if (Platform.OS !== 'web') {
+  TaskManager.defineTask<{ locations: Location.LocationObject[] }>(LOCATION_TASK, async ({ data, error }) => {
+    if (error || !data) return;
+    await handleLocations(data.locations);
+  });
+}
 
 async function startBackgroundUpdates() {
   if (await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK).catch(() => false)) return;
@@ -257,7 +260,7 @@ async function finishSession(st: TrackingState, end: number, outside: boolean) {
   await updateDoc(doc(db, 'sessions', st.sessionId), { end, endedOutside: outside });
   await updateDoc(doc(db, 'live', st.uid), { sessionId: null, ts: end });
   await AsyncStorage.removeItem(STATE_KEY);
-  if (await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK).catch(() => false)) {
+  if (backgroundSupported && (await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK).catch(() => false))) {
     await Location.stopLocationUpdatesAsync(LOCATION_TASK);
   }
 }

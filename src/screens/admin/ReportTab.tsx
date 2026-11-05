@@ -1,8 +1,9 @@
 import { File, Paths } from 'expo-file-system';
+import { showAlert } from '../../lib/alert';
 import { t, tPosition } from '../../lib/i18n';
 import * as Sharing from 'expo-sharing';
 import React, { useMemo, useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import { Button, Card, colors, H, Muted, Row } from '../../components/ui';
 import { buildReport, reportsToCsv } from '../../lib/payroll';
 import { dayKey, fmtHours, fmtMoney, fmtTime, monthKey } from '../../lib/time';
@@ -31,6 +32,14 @@ export default function ReportTab({ settings }: { settings: Settings }) {
   const total = reports.reduce((a, r) => a + r.salary.total, 0);
 
   const exportCsv = async () => {
+    if (Platform.OS === 'web') {
+      const blob = new Blob([reportsToCsv(month, reports)], { type: 'text/csv;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `withus-maosh-${month}.csv`;
+      a.click();
+      return;
+    }
     try {
       const file = new File(Paths.cache, `withus-maosh-${month}.csv`);
       if (file.exists) file.delete();
@@ -38,7 +47,7 @@ export default function ReportTab({ settings }: { settings: Settings }) {
       file.write(reportsToCsv(month, reports));
       await Sharing.shareAsync(file.uri, { mimeType: 'text/csv', dialogTitle: t('report') });
     } catch (e: any) {
-      Alert.alert(t('error'), e?.message ?? String(e));
+      showAlert(t('error'), e?.message ?? String(e));
     }
   };
 

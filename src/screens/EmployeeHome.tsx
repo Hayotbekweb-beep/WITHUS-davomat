@@ -1,9 +1,10 @@
 import * as Location from 'expo-location';
+import { showAlert } from '../lib/alert';
 import { t, t as tr, tPosition } from '../lib/i18n';
 import { signOut } from 'firebase/auth';
 import { collection, doc, onSnapshot, query, updateDoc, where } from 'firebase/firestore';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, AppState, Linking, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { AppState, Linking, RefreshControl, ScrollView, Text, View, Platform } from 'react-native';
 import { Button, Card, colors, H, Muted, Row } from '../components/ui';
 import { useSettings } from '../lib/data';
 import { auth, db } from '../lib/firebase';
@@ -90,17 +91,18 @@ export default function EmployeeHome({ profile }: { profile: UserProfile }) {
       const r = await checkIn(profile, settings);
       await refreshState();
       const late = r.lateMinutes > settings.graceMinutes ? `\n${t('lateBy', { n: r.lateMinutes })}` : '';
-      const bg = r.background ? '' : `\n\n${t('noBgWarning')}`;
-      Alert.alert(t('workStarted'), `${t('timeIs', { t: fmtTime(Date.now()) })}${late}${bg}`);
+      // Fon kuzatuvi umuman imkonsiz joyda (brauzer, Expo Go) ekrandagi eslatma yetarli
+      const bg = r.background || !backgroundSupported ? '' : `\n\n${t('noBgWarning')}`;
+      showAlert(t('workStarted'), `${t('timeIs', { t: fmtTime(Date.now()) })}${late}${bg}`);
     } catch (e: any) {
-      Alert.alert(t('cannotStart'), e?.message ?? String(e));
+      showAlert(t('cannotStart'), e?.message ?? String(e));
     } finally {
       setBusy(false);
     }
   };
 
   const onCheckOut = () =>
-    Alert.alert(t('finishWork'), t('finishConfirm'), [
+    showAlert(t('finishWork'), t('finishConfirm'), [
       { text: t('no') },
       {
         text: t('finishYes'),
@@ -111,7 +113,7 @@ export default function EmployeeHome({ profile }: { profile: UserProfile }) {
             await checkOut();
             await refreshState();
           } catch (e: any) {
-            Alert.alert(t('error'), e?.message ?? String(e));
+            showAlert(t('error'), e?.message ?? String(e));
           } finally {
             setBusy(false);
           }
@@ -164,7 +166,7 @@ export default function EmployeeHome({ profile }: { profile: UserProfile }) {
           </>
         )}
         {!backgroundSupported && (
-          <Muted>{t('expoGoNote')}</Muted>
+          <Muted>{t(Platform.OS === 'web' ? 'webNote' : 'expoGoNote')}</Muted>
         )}
       </Card>
 
@@ -203,7 +205,7 @@ export default function EmployeeHome({ profile }: { profile: UserProfile }) {
       </Card>
 
       <Button title={t('logout')} outline color={colors.muted} onPress={() => {
-        if (sessionId) return Alert.alert(t('finishFirst'));
+        if (sessionId) return showAlert(t('finishFirst'));
         signOut(auth);
       }} />
     </ScrollView>

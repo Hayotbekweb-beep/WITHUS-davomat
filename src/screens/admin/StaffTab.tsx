@@ -1,7 +1,8 @@
 import { doc, setDoc, updateDoc } from 'firebase/firestore';
+import { showAlert } from '../../lib/alert';
 import { t, tPosition } from '../../lib/i18n';
 import React, { useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { Button, Card, Chips, colors, Field, H, Muted } from '../../components/ui';
 import { phoneToEmail } from '../../lib/defaults';
 import { createLoginAccount, db } from '../../lib/firebase';
@@ -63,10 +64,10 @@ export default function StaffTab({ settings }: { settings: Settings }) {
   const save = async () => {
     if (!form) return;
     if (!form.name.trim() || form.phone.replace(/\D/g, '').length < 9) {
-      return Alert.alert(t('error'), t('needNamePhone'));
+      return showAlert(t('error'), t('needNamePhone'));
     }
     if (!editing && form.password.length < 6) {
-      return Alert.alert(t('error'), t('passwordShort'));
+      return showAlert(t('error'), t('passwordShort'));
     }
     setSaving(true);
     try {
@@ -84,19 +85,19 @@ export default function StaffTab({ settings }: { settings: Settings }) {
       } else {
         const uid = await createLoginAccount(phoneToEmail(form.phone), form.password);
         await setDoc(doc(db, 'users', uid), { uid, role: 'employee', active: true, ...data });
-        Alert.alert(t('staffAdded'), t('sendCredentials', { phone: form.phone, password: form.password }));
+        showAlert(t('staffAdded'), t('sendCredentials', { phone: form.phone, password: form.password }));
       }
       setForm(null);
     } catch (e: any) {
       const msg = String(e?.code ?? e?.message ?? e);
-      Alert.alert(t('error'), msg.includes('email-already-in-use') ? t('phoneTaken') : msg);
+      showAlert(t('error'), msg.includes('email-already-in-use') ? t('phoneTaken') : msg);
     } finally {
       setSaving(false);
     }
   };
 
   const toggleActive = (u: UserProfile) =>
-    Alert.alert(
+    showAlert(
       u.active === false ? t('activate') : t('deactivate'),
       t(u.active === false ? 'activateConfirm' : 'deactivateConfirm', { name: u.name }),
       [

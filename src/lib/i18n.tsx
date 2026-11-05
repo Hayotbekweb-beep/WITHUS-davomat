@@ -133,6 +133,11 @@ const dict = {
     ru: 'Тестовый режим (Expo Go, iPhone): учёт работает только при открытом приложении.',
     en: 'Test mode (Expo Go, iPhone): tracking works only while the app is open.',
   },
+  webNote: {
+    uz: 'Brauzer test rejimi: joylashuv faqat sahifa ochiq turganda kuzatiladi.',
+    ru: 'Тестовый режим в браузере: геолокация учитывается, только пока страница открыта.',
+    en: 'Browser test mode: location is tracked only while the page is open.',
+  },
   tasks: { uz: 'Topshiriqlar', ru: 'Задания', en: 'Tasks' },
   noActiveTasks: { uz: "Faol topshiriq yo'q", ru: 'Нет активных заданий', en: 'No active tasks' },
   arriveBy: { uz: 'Yetib borish muddati', ru: 'Прибыть до', en: 'Arrive by' },
